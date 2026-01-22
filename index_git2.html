@@ -446,34 +446,41 @@ function saveTimer(time) {
 // --- 3. HÀM TẢI DỮ LIỆU ---
 async function loadData() {
     try {
-        const response = await fetch(DATA_URL); // Tải JSON từ Gist
+        const response = await fetch(DATA_URL);
         const data = await response.json();
 
-        // Nạp cấu hình từ khóa "config" trong JSON
+        // 1. Nạp cấu hình (Giữ nguyên đoạn này của bạn)
         if (data.config) {
             tenBaiKiemTra = data.config.tenBaiKiemTra || tenBaiKiemTra;
             durationInMinutes = parseInt(data.config.thoiGianLamBai) || durationInMinutes;
             mode = data.config.mode || mode;
-            
-            // Lấy link nộp bài từ JSON
             SCRIPT_URL = data.config.script_url_submit || ""; 
-            
             if (data.config.shuffleOptions) {
                 shuffleOptions = { ...shuffleOptions, ...data.config.shuffleOptions };
             }
         }
 
-        // Cập nhật giao diện
+        // 2. Cập nhật giao diện
         document.title = tenBaiKiemTra;
         const titleH1 = document.querySelector('h1');
         if (titleH1) titleH1.innerText = tenBaiKiemTra;
 
-        // Xử lý quiz (Giả sử hàm render của bạn tên là renderQuiz)
-        renderQuiz(data);
+        // 3. QUAN TRỌNG: Gán lại dữ liệu câu hỏi
+        // Vì file của bạn dùng hàm processQuizData(data) 
+        // Chúng ta phải truyền toàn bộ 'data' vào đó
+        if (typeof processQuizData === "function") {
+            processQuizData(data); 
+        } else {
+            // Nếu bạn dùng tên hàm khác như renderQuiz
+            renderQuiz(data);
+        }
+
+        // 4. Bắt đầu đếm ngược
         startTimer(durationInMinutes * 60);
 
     } catch (error) {
         console.error("Lỗi tải dữ liệu:", error);
+        alert("Không thể tải dữ liệu câu hỏi. Hãy kiểm tra lại link Gist!");
     }
 }
 
@@ -2496,5 +2503,6 @@ document.addEventListener("keydown", function (e) {
     </script>
 </body>
 </html>
+
 
 
