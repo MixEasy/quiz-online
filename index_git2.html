@@ -361,41 +361,14 @@
     </div>
     <script>
 
-const SECRET_KEY = "GV_TOAN_2026"; 
-
-function simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = (hash << 5) - hash + str.charCodeAt(i);
-        hash |= 0; // Convert to 32bit integer
-    }
-    return hash.toString();
-}
-
-
-
 // 1. LẤY VÀ KIỂM TRA THAM SỐ URL
 const params = new URLSearchParams(location.search);
 const rawData = params.get("data"); // Đây là link Gist đã mã hóa Base64
-const sigParam = params.get("sig");
 
-if (!rawData || !sigParam) {
-    alert("❌ Link đề thi không hợp lệ hoặc thiếu thông số!");
-    throw new Error("Invalid URL parameters");
-}
-
-// 2. XÁC THỰC CHỮ KÝ (SIG) - Chống sửa đổi thời gian/chế độ
-//const expectedSig = simpleHash(rawData + timeParam + modeParam + SECRET_KEY);
-//if (sigParam !== expectedSig) {alert("❌ Link đã bị chỉnh sửa hoặc không hợp lệ!"); throw new Error("Tampered link");}
 
 // 3. GIẢI MÃ LINK DỮ LIỆU GỐC
 let DATA_URL = "";
-try {
-    DATA_URL = atob(rawData); // Giải mã Base64
-} catch (e) {
-    alert("❌ Lỗi định dạng dữ liệu (Base64)");
-    throw new Error("Decode failed");
-}
+
 
 // ================== CẤU HÌNH HỆ THỐNG QUZ ==================
 // 1. Khai báo mặc định
@@ -2498,3 +2471,4 @@ document.addEventListener("keydown", function (e) {
     </script>
 </body>
 </html>
+
