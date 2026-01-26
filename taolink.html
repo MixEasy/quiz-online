@@ -59,34 +59,13 @@
     <label>Link DATA_URL (JSON đề thi)</label>
     <input id="dataUrl" placeholder="https://gist.githubusercontent.com/.../quizdata.json">
 
-    <label>Thời gian làm bài (phút)</label>
-    <input id="time" type="number" value="90">
-
-    <label>Chế độ xem kết quả</label>
-    <select id="mode">
-        <option value="HS">Học sinh</option>
-        <option value="HS_DIEM">Học sinh xem điểm</option>
-        <option value="GV">Giáo viên (không TL)</option>
-        <option value="GV_TL">Giáo viên (có tự luận)</option>
-    </select>
-
+    
     <button onclick="createLink()">Tạo link đề thi</button>
 
     <div class="result" id="result"></div>
 </div>
 
 <script>
-const SECRET_KEY = "GV_TOAN_2026";
-
-function simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = (hash << 5) - hash + str.charCodeAt(i);
-        hash |= 0;
-    }
-    return hash.toString();
-}
-
 function createLink() {
     const data = document.getElementById("dataUrl").value.trim();
     if (!data) {
@@ -94,17 +73,13 @@ function createLink() {
         return;
     }
 
-    const time = document.getElementById("time").value;
-    const mode = document.getElementById("mode").value;
+    // Encode UTF-8 + Base64 (giống Python)
+    const encoded = btoa(unescape(encodeURIComponent(data)));
 
-    const base = location.href.replace("tao-link.html", "index.html");
+    const base = location.href.replace("taolink.html", "Online.html");
 
-    // 🔐 TẠO CHỮ KÝ
-    const raw = data + time + mode + SECRET_KEY;
-    const sig = simpleHash(raw);
-
-    // 🔗 LINK ĐÃ KHOÁ
-    const link = `${base}?data=${encodeURIComponent(data)}&time=${time}&mode=${mode}&sig=${sig}`;
+    // 🔗 LINK ĐÃ MÃ HÓA
+    const link = `${base}?data=${encoded}`;
 
     document.getElementById("result").innerHTML = `
         <b>Link đề thi:</b><br>
@@ -115,3 +90,4 @@ function createLink() {
 
 </body>
 </html>
+
