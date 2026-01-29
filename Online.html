@@ -507,15 +507,23 @@ const params = new URLSearchParams(location.search);
 const rawData = params.get("data"); // Đây là link Gist đã mã hóa Base64
 //const timeParam = params.get("time");
 //const modeParam = params.get("mode");
+const SECRET_KEY = "MixEasy_2026";
 
-// 3. GIẢI MÃ LINK DỮ LIỆU GỐC 281
-let DATA_URL = "";
-try {
-    DATA_URL = atob(rawData); // Giải mã Base64
-} catch (e) {
-    alert("❌ Lỗi định dạng dữ liệu");
-    throw new Error("Decode failed");
+function xorDecrypt(text, key) {
+  return text.split("").map((c, i) =>
+    String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length))
+  ).join("");
 }
+let decoded = atob(rawData);
+let DATA_URL = xorDecrypt(decoded, SECRET_KEY);
+// 3. GIẢI MÃ LINK DỮ LIỆU GỐC 281
+//let DATA_URL = "";
+//try {
+    //DATA_URL = atob(rawData); // Giải mã Base64
+//} catch (e) {
+ //   alert("❌ Lỗi định dạng dữ liệu");
+//    throw new Error("Decode failed");
+//}
 
 // ================== CẤU HÌNH HỆ THỐNG QUZ ==================
 let SCRIPT_URL = ""; // Để trống, sẽ lấy từ JSON
