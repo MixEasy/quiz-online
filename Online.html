@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -432,8 +431,10 @@
   <div class="form-block">
       <div class="form-inputs-container">
           <h2>Thông tin thí sinh</h2>
-          <input type="text" id="fullName" placeholder="Nhập họ và tên" required autocomplete="off">
-          <input type="text" id="className" placeholder="Nhập lớp" required autocomplete="off">
+          <!-- 281 -->
+          <input type="text" id="fullName" placeholder="Họ và tên" autocomplete="off">
+          <input type="text" id="className" placeholder="Lớp" required autocomplete="off">
+          <input type="text" id="sobaodanh" placeholder="Số báo danh" required autocomplete="off">
           <!-- 271 -->
           <div id="password-section" style="display: none; width: 50%;">
             <input type="text" id="quizPasswordInput" placeholder="Nhập mật khẩu đề thi" autocomplete="new-password">
@@ -451,8 +452,8 @@
     <div id="quiz-section">
         <div class="main-wrapper">
             <div class="container" id="quizContainer">
-                <!-- new 26/1 -nút ẩn menu -->
-                <button id="desktop-toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện menu">☰</button>
+                <!-- new 281 -nút ẩn menu -->
+                <button id="desktop-toggle-btn" onclick="toggleSidebar()" title="Ẩn/Hiện menu">☰ Ẩn</button>
 
                 <button id="toggle-results-btn">&#9776;</button> 
                 <div id="quiz-content">
@@ -466,14 +467,14 @@
                 </div>
             </div>
             <div id="results-panel">
-                <div class="font-control-co-chu">
+                <!-- new 281 -->
+                <div class="font-control-co-chu" style="justify-content: flex-start;">
                     <span class="font-label-co-chu">Cỡ chữ:</span>
                     <button onclick="decreaseFont()">A−</button>
                     <button onclick="increaseFont()">A+</button>
                 </div>
-                <!-- new 281 -->
                 <div id="display-mode-container" class="font-control-co-chu" style="margin-top: 10px; background: #fff3e0; border-color: #ffe0b2; display: none;">
-                    <span class="font-label-co-chu" style="color: #e65100;">Hiển thị :</span>
+                    <span class="font-label-co-chu" style="color: #e65100;">Hiển thị:</span>
                     <button onclick="setDisplayMode('single')" id="btn-mode-single" style="font-size: 15px; padding: 4px 6px; background: #2196F3; color: white;">Từng câu</button>
                     <button onclick="setDisplayMode('all')" id="btn-mode-all" style="font-size: 15px; padding: 4px 6px;">Tất cả</button>
                 </div>
@@ -484,7 +485,8 @@
                     <table class="results-table" id="results-table-type1"><tbody></tbody></table>
                 </div>
                 <div class="results-table-container" id="results-container-type2">
-                    <h3>Phần 3: Trắc nghiệm Đúng/Sai</h3>
+                    <!-- new 281 -->
+                    <h3>Phần 2: Trắc nghiệm Đúng/Sai</h3>
                     <table class="results-table" id="results-table-type2"><tbody></tbody></table>
                 </div>
                 <div class="results-table-container" id="results-container-type3">
@@ -506,12 +508,12 @@ const rawData = params.get("data"); // Đây là link Gist đã mã hóa Base64
 //const timeParam = params.get("time");
 //const modeParam = params.get("mode");
 
-// 3. GIẢI MÃ LINK DỮ LIỆU GỐC
+// 3. GIẢI MÃ LINK DỮ LIỆU GỐC 281
 let DATA_URL = "";
 try {
     DATA_URL = atob(rawData); // Giải mã Base64
 } catch (e) {
-    alert("❌ Lỗi định dạng dữ liệu (Base64)");
+    alert("❌ Lỗi định dạng dữ liệu");
     throw new Error("Decode failed");
 }
 
@@ -521,13 +523,13 @@ let quizTitle = "Mix Easy_Online"; // Tiêu đề mặc định trên trình duy
 let tenBaiKiemTra = "LUYỆN TẬP TỔNG HỢP"; //Tên tạm thời
 let TIME_LIMIT_MINUTES = 90; // Giá trị mặc định nếu JSON lỗi
 let timeLeft = TIME_LIMIT_MINUTES * 60; // Biến này sẽ được cập nhật lại khi nhấn Start
+let QUIZ_TIME_LEFT_MODE = "cotinh"; // Mặc định
 //281
-let allowViewAll = "no"; 
+let allowViewAll = true; 
 //271
 let QUIZ_PASSWORD_ORIGINAL = ""; // Biến lưu mật khẩu từ JSON
-let QUIZ_TIME_LEFT_MODE = "cotinh"; // Mặc định
 let mode_xuatketqua = "HS_DIEM";
-let QUIZ_MODE_CSV = "khongchophepxuatcsv"; // Mặc định là ẩn
+let QUIZ_MODE_CSV = false; // Mặc định là ẩn
 let shuffleOptions = {
     "shuffle_q_type1": false, "shuffle_a_type1": false, 
     "shuffle_q_type2": false, "shuffle_a_type2": false, 
@@ -541,17 +543,16 @@ let SCORING_CONFIG = {
     type2_4: 1.0,
     type3: 0.5
 };
-let QUIZ_MODE_LOCAL = "save_local"; // Mặc định là cho phép lưu
-// Lấy thời gian từ URL (đã qua kiểm tra sig)
+let QUIZ_MODE_LOCAL = "no_save"; // Mặc định là không cho phép lưu
+
 let quizData = [];
 let currentQuestionIndex = 0;
 const userSelections = [];
 let timerInterval;
 let userInfo = {};
 
-// --- QUẢN LÝ LOCALSTORAGE VỚI PREFIX ---
+// 281 --- QUẢN LÝ LOCALSTORAGE VỚI PREFIX ---
 let _prefix = "Quiz";
-
 let KEY_QUIZDATA;
 let KEY_SELECTION;
 let KEY_TIME;
@@ -561,7 +562,6 @@ let KEY_EXPIRED;
 
 function initStorageKeys() {
     _prefix = (tenBaiKiemTra || "Quiz").replace(/\W+/g, "_");
-
     KEY_QUIZDATA   = "quizData_" + _prefix;
     KEY_SELECTION  = "quizSelections_" + _prefix;
     KEY_TIME       = "remainingTime_" + _prefix;
@@ -651,7 +651,7 @@ async function loadData() {
             }
             const btnCSV = document.getElementById("btn-xuatcsv");
             if (btnCSV) {
-                if (QUIZ_MODE_CSV === "chophepxuatcsv") {
+                if (QUIZ_MODE_CSV === true || QUIZ_MODE_CSV === "chophepxuatcsv") {
                     btnCSV.style.display = "inline-block"; // Hiện nút
                 } else {
                     btnCSV.style.display = "none"; // Ẩn nút
@@ -676,7 +676,7 @@ async function loadData() {
             }
             const displayModeContainer = document.getElementById("display-mode-container");
             if (displayModeContainer) {
-                if (allowViewAll === "yes" || allowViewAll === true) {
+                if (allowViewAll === true || allowViewAll === "yes") {
                     displayModeContainer.style.display = "block"; // Hiện nút chọn chế độ
                 } else {
                     displayModeContainer.style.display = "none";  // Ẩn nút chọn chế độ
@@ -917,28 +917,31 @@ function checkPasswordAndStart(isNewStart) {
         startQuiz();
     }
 }
-// Sửa: Thêm logic lưu và tải dữ liệu vào hàm startQuiz() (Đã sửa khóa)
+// 281 thêm sbd
 function startQuiz() {
     const fullName = document.getElementById('fullName').value.trim();
     const className = document.getElementById('className').value.trim();
+    const sbd = document.getElementById('sobaodanh').value.trim();
 
     // --- Xử lý thông tin thí sinh ---
     const savedUserInfo = localStorage.getItem(KEY_USER_INFO);
     if (savedUserInfo) {
         userInfo = JSON.parse(savedUserInfo);
-        if (!fullName && !className) {
-            document.getElementById('fullName').value = userInfo.name;
-            document.getElementById('className').value = userInfo.class;
+        if (!fullName && !className && !sbd) {
+            document.getElementById('fullName').value = userInfo.name || "";
+            document.getElementById('className').value = userInfo.class || "";
+            document.getElementById('sobaodanh').value = userInfo.sbd || ""; // Hiện lại SBD cũ
         } else {
-            userInfo = { name: fullName, class: className };
+            userInfo = { name: fullName, class: className, sbd: sbd }; // THÊM sbd
             localStorage.setItem(KEY_USER_INFO, JSON.stringify(userInfo));
         }
     } else {
-        if (fullName === "" || className === "") { 
-            showCustomAlert("Vui lòng nhập đầy đủ họ tên và lớp!", null, null);
+        // Kiểm tra xem đã nhập đủ 3 ô chưa
+        if (fullName === "" || className === "" || sbd === "") { 
+            showCustomAlert("Vui lòng nhập đầy đủ họ tên, lớp và số báo danh!", null, null);
             return; 
         }
-        userInfo = { name: fullName, class: className };
+        userInfo = { name: fullName, class: className, sbd: sbd }; // THÊM sbd
         localStorage.setItem(KEY_USER_INFO, JSON.stringify(userInfo));
     }
 
@@ -1572,11 +1575,7 @@ function finalizeSubmit() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-    .then(() => { // Thay đổi response => {} thành () => {}
-        //showCustomAlert("✅ Đã gửi bài thành công! Kết quả của bạn đã được ghi nhận.", null, null, true);
-        
-        //submitBtn.textContent = 'Đã nộp';
-        //lockAnswerInputs();
+    .then(() => {
         showCustomAlert(
         "✅ Đã gửi bài thành công! Kết quả của bạn đã được ghi nhận.",
         function() {
@@ -2648,7 +2647,7 @@ function showResults_HS() {
 }
 function xuatCSV() {
     // Sử dụng biến đã cập nhật từ JSON
-    if (QUIZ_MODE_CSV === "chophepxuatcsv") {
+    if (QUIZ_MODE_CSV === true || QUIZ_MODE_CSV === "chophepxuatcsv") {
         let message = `Bạn có chắc muốn xuất file CSV? Sau khi xuất thì không thể tiếp tục làm bài.`;
         showCustomAlert(
             message,
@@ -2715,7 +2714,7 @@ function exportCSV() {
     link.click();
     document.body.removeChild(link);
 }
-//new 261 - ẩn menu
+//new 281 - ẩn menu
 function toggleSidebar() {
     // Thêm hoặc xóa class 'sidebar-hidden' vào wrapper chính
     const wrapper = document.querySelector('.main-wrapper');
@@ -2727,7 +2726,7 @@ function toggleSidebar() {
         btn.innerHTML = '☰ Hiện menu';
         btn.style.opacity = "0.7";
     } else {
-        btn.innerHTML = '☰';
+        btn.innerHTML = '☰ Ẩn';
         btn.style.opacity = "1";
     }
 }
