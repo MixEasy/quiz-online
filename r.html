@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+const id = new URLSearchParams(location.search).get("id");
+
+fetch("https://raw.githubusercontent.com/huyquochoc/Quiz/main/shortlinks.json")
+.then(r => r.json())
+.then(data => {
+  if (id && data[id]) {
+    location.href = data[id];
+  } else {
+    document.body.innerHTML = "❌ Link không tồn tại";
+  }
+});
+</script>
+</body>
+</html>
