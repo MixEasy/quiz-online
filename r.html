@@ -1,18 +1,89 @@
 <!DOCTYPE html>
-<html>
-<body>
-<script>
-const id = new URLSearchParams(location.search).get("id");
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Redirecting...</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-fetch("https://raw.githubusercontent.com/huyquochoc/Quiz/main/shortlinks.json")
-.then(r => r.json())
-.then(data => {
-  if (id && data[id]) {
-    location.href = data[id];
-  } else {
-    document.body.innerHTML = "❌ Link không tồn tại";
-  }
-});
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f6f7fb;
+  text-align: center;
+  padding-top: 60px;
+}
+.box {
+  background: white;
+  padding: 25px;
+  max-width: 520px;
+  margin: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0,0,0,.08);
+}
+.error {
+  color: red;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h2 id="status">🔄 Đang xử lý link...</h2>
+  <p id="msg"></p>
+</div>
+
+<script>
+const JSON_URL = "https://huyquochoc.github.io/Quiz/shortlinks.json";
+
+const params = new URLSearchParams(window.location.search);
+const key = params.get("id");
+
+const statusEl = document.getElementById("status");
+const msgEl = document.getElementById("msg");
+
+if (!key) {
+  statusEl.textContent = "❌ Thiếu mã link";
+  msgEl.textContent = "Không tìm thấy tham số ?id=";
+  throw new Error("Missing id");
+}
+
+fetch(JSON_URL)
+  .then(r => r.json())
+  .then(data => {
+    if (!data[key]) {
+      statusEl.textContent = "❌ Link không tồn tại";
+      msgEl.textContent = "Mã link không hợp lệ hoặc đã bị xóa";
+      return;
+    }
+
+    const record = data[key];
+    const url = record.url;
+    const expire = record.expire;
+
+    // ===== CHECK EXPIRE =====
+    if (expire) {
+      const today = new Date().toISOString().split("T")[0];
+      if (today > expire) {
+        statusEl.textContent = "⛔ Link đã hết hạn";
+        msgEl.textContent = "Vui lòng liên hệ giáo viên để lấy link mới";
+        return;
+      }
+    }
+
+    // ===== REDIRECT =====
+    statusEl.textContent = "✅ Đang chuyển hướng...";
+    msgEl.textContent = "Vui lòng chờ...";
+
+    setTimeout(() => {
+      window.location.href = url;
+    }, 800);
+  })
+  .catch(err => {
+    console.error(err);
+    statusEl.textContent = "⚠️ Lỗi tải dữ liệu";
+    msgEl.textContent = "Không thể tải shortlinks.json";
+  });
 </script>
 </body>
 </html>
