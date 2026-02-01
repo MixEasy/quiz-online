@@ -39,17 +39,22 @@ const statusEl = document.getElementById("status");
 const msgEl = document.getElementById("msg");
 
 if (!key) {
-  statusEl.textContent = "❌ Thiếu mã truy cập";
-  msgEl.textContent = "Link không hợp lệ";
-  throw new Error("Missing id");
+  statusEl.textContent = "❌ Link không hợp lệ";
+  msgEl.textContent =
+    "Thiếu mã truy cập. Vui lòng kiểm tra lại link hoặc đợi vài chục giây nếu vừa mới tạo.";
+  return;
 }
 
 fetch(JSON_URL + "?t=" + Date.now())
   .then(r => r.json())
   .then(data => {
     if (!data[key]) {
-      statusEl.textContent = "❌ Link không tồn tại";
-      msgEl.textContent = "Mã link không hợp lệ hoặc đã bị xóa";
+      statusEl.textContent = "⏳ Link đang được cập nhật";
+      msgEl.textContent =
+        "Link vừa được tạo. Vui lòng thử lại sau 30–60 giây.";
+    
+      // auto reload 1 lần
+      setTimeout(() => location.reload(), 5000);
       return;
     }
 
